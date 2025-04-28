@@ -1,0 +1,44 @@
+private string GetThreadPoolHealth()
+{
+    ThreadPool.GetAvailableThreads(out int workerThreads, out int completionPortThreads);
+    ThreadPool.GetMinThreads(out int minWorkerThreads, out int minCompletionPortThreads);
+    ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxCompletionPortThreads);
+
+    return $"ThreadPool Health => " +
+           $"Available Workers: {workerThreads}, " +
+           $"Available IOCP: {completionPortThreads}, " +
+           $"Min Workers: {minWorkerThreads}, " +
+           $"Min IOCP: {minCompletionPortThreads}, " +
+           $"Max Workers: {maxWorkerThreads}, " +
+           $"Max IOCP: {maxCompletionPortThreads}, " +
+           $"Processor Count: {Environment.ProcessorCount}";
+}
+
+
+var threadPoolInfo = GetThreadPoolHealth();
+
+_logger.LogInformation("API Response for {Path} | {StatusCode} | ThreadPool Info: {ThreadPoolInfo}",
+    HttpContext.Request.Path,
+    HttpContext.Response.StatusCode,
+    threadPoolInfo);
+
+
+_logger.LogInformation("API Response: {@ResponseInfo}", new
+{
+    Path = HttpContext.Request.Path,
+    StatusCode = HttpContext.Response.StatusCode,
+    ThreadPool = new
+    {
+        AvailableWorkerThreads = workerThreads,
+        AvailableIOCPThreads = completionPortThreads,
+        MinWorkerThreads = minWorkerThreads,
+        MinIOCPThreads = minCompletionPortThreads,
+        MaxWorkerThreads = maxWorkerThreads,
+        MaxIOCPThreads = maxCompletionPortThreads,
+        ProcessorCount = Environment.ProcessorCount
+    }
+});
+
+var memoryUsageMB = Environment.WorkingSet / 1024 / 1024;
+var gcHeapSizeMB = GC.GetTotalMemory(false) / 1024 / 1024;
+
